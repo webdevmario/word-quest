@@ -14,6 +14,7 @@ export type Screen =
   | 'setup'
   | 'search'
   | 'worm'
+  | 'guess'
   | 'trophies'
   | 'wordbook'
   | 'parent';

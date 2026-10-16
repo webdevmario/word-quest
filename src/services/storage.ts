@@ -45,7 +45,8 @@ export function normalizeProfile(raw: Loose): Profile {
   const difficulty = LEVELS.includes(prefs.difficulty as DifficultyKey)
     ? (prefs.difficulty as DifficultyKey)
     : 'easy';
-  const mode: GameMode = prefs.mode === 'worm' ? 'worm' : 'search';
+  const mode: GameMode =
+    prefs.mode === 'worm' || prefs.mode === 'guess' ? prefs.mode : 'search';
   return {
     id: String(raw.id ?? `p${Date.now().toString(36)}`),
     name: String(raw.name ?? 'Player'),
@@ -59,6 +60,7 @@ export function normalizeProfile(raw: Loose): Profile {
       mode,
       difficulty,
       theme: typeof prefs.theme === 'string' ? prefs.theme : 'animals',
+      guessDaily: prefs.guessDaily !== false,
     },
     wordBook: isObject(raw.wordBook)
       ? (raw.wordBook as Profile['wordBook'])

@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { Lightbulb } from 'lucide-react';
+import { Check, Lightbulb } from 'lucide-react';
 import { stagger, useAnimate } from 'motion/react';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
@@ -441,8 +441,6 @@ export function WordSearchGame() {
             <ul className="mt-3 grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-1">
               {puzzle.words.map((w) => {
                 const found = game.found.get(w.text);
-                const hinted = game.hinted.has(w.text);
-                const value = hinted ? Math.ceil(w.value / 2) : w.value;
                 return (
                   <li key={w.text}>
                     <button
@@ -452,12 +450,9 @@ export function WordSearchGame() {
                         'flex w-full items-center justify-between gap-2 rounded-xl px-3 py-1.5 text-left font-bold tracking-wide transition',
                         found
                           ? 'bg-black/25'
-                          : 'bg-parchment-100 text-ink hover:bg-parchment-50',
-                        w.golden &&
-                          !found &&
-                          'bg-gradient-to-r from-gilt-200 to-gilt-300'
+                          : 'bg-parchment-100 text-ink hover:bg-parchment-50'
                       )}
-                      aria-label={`${w.text}, ${value} points${found ? ', found' : ''}. Open word card`}
+                      aria-label={`${w.text}${found ? ', found' : ''}. Open word card`}
                     >
                       <span className="flex items-center gap-2">
                         {found && (
@@ -476,24 +471,16 @@ export function WordSearchGame() {
                           {w.text}
                         </span>
                       </span>
-                      <span
-                        className={clsx(
-                          'rounded-full px-2 text-xs tabular-nums',
-                          found
-                            ? 'bg-emerald text-white'
-                            : 'bg-ink text-parchment-50'
-                        )}
-                      >
-                        {w.golden ? '★ ' : ''}
-                        {found ? `+${found.points}` : value}
-                      </span>
+                      {found && (
+                        <Check className="size-4 text-emerald" aria-hidden />
+                      )}
                     </button>
                   </li>
                 );
               })}
             </ul>
             <p className="mt-3 text-xs text-parchment-300">
-              ★ Golden word = double points. Tap a word to learn what it means.
+              Tap a word to hear it and learn what it means.
             </p>
           </div>
         </aside>

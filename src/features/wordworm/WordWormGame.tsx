@@ -1,5 +1,12 @@
 import clsx from 'clsx';
-import { Check, Flag, Lightbulb, Shuffle, Undo2 } from 'lucide-react';
+import {
+  Check,
+  CircleHelp,
+  Flag,
+  Lightbulb,
+  Shuffle,
+  Undo2,
+} from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -14,6 +21,7 @@ import { useDictionary } from '@/dictionary/useDictionary';
 import { WordToast } from '@/features/learn/WordToast';
 import type { ToastWord } from '@/features/learn/WordToast';
 import { HexBoard } from '@/features/wordworm/HexBoard';
+import { TileGuide } from '@/features/wordworm/TileGuide';
 import { WormResults } from '@/features/wordworm/WormResults';
 import type { WormResultsData } from '@/features/wordworm/WormResults';
 import { rain } from '@/fx/confetti';
@@ -41,6 +49,7 @@ import {
 import type { Board, Pos } from '@/game/wordworm/board';
 import { pickBonusWord } from '@/game/wordworm/bonus';
 import type { BonusWord } from '@/game/wordworm/bonus';
+import { fireLevel, fireRules } from '@/game/wordworm/rules';
 import { findWords, pickHint } from '@/game/wordworm/solver';
 import { addPoints, finishWormGame, recordWormWord } from '@/store/actions';
 import type { Rewards } from '@/store/actions';
@@ -92,6 +101,10 @@ export function WordWormGame() {
   const [results, setResults] = useState<WormResultsData | null>(null);
   const [confirmFinish, setConfirmFinish] = useState(false);
   const [showClue, setShowClue] = useState(false);
+  // Show the tile guide the very first time a player opens Word Worm.
+  const [showGuide, setShowGuide] = useState(
+    () => (profile?.stats.wormWords ?? 0) === 0
+  );
   const earnedBadges = useRef<Badge[]>([]);
   const dragging = useRef(false);
 
@@ -102,6 +115,19 @@ export function WordWormGame() {
   const over = results !== null;
   const goal = chapterGoal(chapter, level.mult);
   const progress = Math.min(1, (score - chapterStart) / goal);
+  const danger = fireLevel(board) === 'danger';
+
+  // Inky warns once each time a fire tile gets close to the bottom.
+  useEffect(() => {
+    if (danger) {
+      sound.fire();
+      mascotSay(
+        'oops',
+        'Watch out! A fire tile is almost at the bottom!',
+        3500
+      );
+    }
+  }, [danger]);
 
   const select = useCallback(
     (next: Pos[]) => {
@@ -162,10 +188,7 @@ export function WordWormGame() {
     const result = submitPath(
       board,
       path,
-      {
-        fireChance: level.worm.fireChance,
-        fireWordMax: level.worm.fireWordMax,
-      },
+      fireRules(difficulty, chapter),
       Math.random
     );
 
@@ -212,6 +235,8 @@ export function WordWormGame() {
       tiles,
       board: boardRect ?? new DOMRect(innerWidth / 2, innerHeight / 2, 0, 0),
       chips,
+      feedInky: true,
+      letters: used.map((t) => t.letter),
     });
     if (result.gemSpawned || isBonus) {
       setTimeout(() => sound.shimmer(), 500);
@@ -299,7 +324,7 @@ export function WordWormGame() {
     let next = shuffleBoard(board);
     next = plantWord(next, bonus.word) ?? next;
     // On harder levels a shuffle costs a fire tile, like in Bookworm.
-    if (level.worm.fireChance > 0) {
+    if (fireRules(difficulty, chapter).fireChance > 0) {
       const top = next.columns
         .map((col) => col[0])
         .filter((t) => t && !t.gem && !t.fire);
@@ -422,15 +447,25 @@ export function WordWormGame() {
           </div>
         }
         actions={
-          <Button
-            variant="wood"
-            size="sm"
-            onClick={() => setConfirmFinish(true)}
-            disabled={!words.length || over}
-            aria-label="Finish game"
-          >
-            <Flag className="size-5" aria-hidden />
-          </Button>
+          <>
+            <Button
+              variant="wood"
+              size="sm"
+              onClick={() => setShowGuide(true)}
+              aria-label="How to play"
+            >
+              <CircleHelp className="size-5" aria-hidden />
+            </Button>
+            <Button
+              variant="wood"
+              size="sm"
+              onClick={() => setConfirmFinish(true)}
+              disabled={!words.length || over}
+              aria-label="Finish game"
+            >
+              <Flag className="size-5" aria-hidden />
+            </Button>
+          </>
         }
       />
 
@@ -469,24 +504,31 @@ export function WordWormGame() {
               Opening the dictionary…
             </div>
           ) : (
-            <HexBoard
-              board={board}
-              path={path}
-              hintIds={hintIds}
-              shake={shake}
-              disabled={over}
-              onPointerDown={onTileDown}
-              onDragOver={onDragOver}
-              onPointerUp={() => {
-                dragging.current = false;
-              }}
-            />
+            <div
+              className={clsx(
+                'w-full max-w-[480px] rounded-[24px]',
+                danger && 'fire-danger'
+              )}
+            >
+              <HexBoard
+                board={board}
+                path={path}
+                hintIds={hintIds}
+                shake={shake}
+                disabled={over}
+                onPointerDown={onTileDown}
+                onDragOver={onDragOver}
+                onPointerUp={() => {
+                  dragging.current = false;
+                }}
+              />
+            </div>
           )}
         </div>
 
         <aside className="flex w-full max-w-[480px] flex-col gap-3 lg:w-80">
           <div className="hidden h-36 lg:block">
-            <Mascot className="mx-auto h-full w-32" />
+            <Mascot className="mx-auto h-full w-32" target />
           </div>
 
           {/* The word being built. */}
@@ -498,6 +540,7 @@ export function WordWormGame() {
             )}
             aria-live="polite"
           >
+            <Mascot className="-my-2 h-16 w-14 shrink-0 lg:hidden" target />
             <div className="flex min-w-0 flex-1 flex-wrap gap-1">
               <AnimatePresence initial={false}>
                 {tokens.map((letter, i) => (
@@ -627,6 +670,8 @@ export function WordWormGame() {
       </AnimatePresence>
 
       <WordToast item={toast} onDone={() => setToast(null)} />
+
+      <TileGuide open={showGuide} onClose={() => setShowGuide(false)} />
 
       <WormResults
         data={results}

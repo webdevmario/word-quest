@@ -23,7 +23,12 @@ const makeProfile = (): Profile => ({
   points: 0,
   stats: defaultStats(),
   badges: {},
-  prefs: { mode: 'search', difficulty: 'easy', theme: 'animals' },
+  prefs: {
+    mode: 'search',
+    difficulty: 'easy',
+    theme: 'animals',
+    guessDaily: true,
+  },
   wordBook: {},
 });
 

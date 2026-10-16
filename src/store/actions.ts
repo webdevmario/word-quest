@@ -239,6 +239,42 @@ export function finishWormGame(id: string, score: number): Rewards {
   });
 }
 
+// ---------- Word Guess ----------
+
+export interface GuessGameEvent {
+  word: string;
+  won: boolean;
+  tries: number;
+  points: number;
+  /** Set for the word of the day: its date key. */
+  daily: string | null;
+}
+
+export function recordGuessGame(id: string, e: GuessGameEvent): Rewards {
+  return withProfile(id, (p) => {
+    const s = p.stats;
+    s.guessPlayed++;
+    if (e.daily) {
+      s.dailyPlayed = e.daily;
+    }
+    if (!e.won) {
+      s.guessStreak = 0;
+      return;
+    }
+    p.points += e.points;
+    s.guessWon++;
+    s.guessStreak++;
+    s.guessBestStreak = Math.max(s.guessBestStreak, s.guessStreak);
+    s.guessBestTries =
+      s.guessBestTries === null ? e.tries : Math.min(s.guessBestTries, e.tries);
+    s.guessDist[e.tries] = (s.guessDist[e.tries] ?? 0) + 1;
+    if (e.daily) {
+      s.dailyWins++;
+    }
+    return { newWord: collectWord(p, e.word) };
+  });
+}
+
 // ---------- Learning ----------
 
 export function noteCardOpened(id: string): Rewards {

@@ -161,22 +161,45 @@ export function FxLayer() {
         {word && <WordBanner key={word.id} c={word} />}
       </AnimatePresence>
 
-      {flyers.map((f) => (
-        <motion.div
-          key={f.id}
-          className="pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gilt-300 px-3 py-1 font-extrabold text-ink shadow-lg"
-          initial={{ left: f.from.x, top: f.from.y, scale: 0.6, opacity: 0 }}
-          animate={{
-            left: [f.from.x, f.from.x, f.to.x],
-            top: [f.from.y, f.from.y - 40, f.to.y],
-            scale: [0.6, 1.2, 0.5],
-            opacity: [0, 1, 0.9],
-          }}
-          transition={{ duration: 0.85, times: [0, 0.3, 1], ease: 'easeInOut' }}
-        >
-          +{f.points}
-        </motion.div>
-      ))}
+      {flyers.map((f) =>
+        f.kind === 'points' ? (
+          <motion.div
+            key={f.id}
+            className="pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gilt-300 px-3 py-1 font-extrabold text-ink shadow-lg"
+            initial={{ left: f.from.x, top: f.from.y, scale: 0.6, opacity: 0 }}
+            animate={{
+              left: [f.from.x, f.from.x, f.to.x],
+              top: [f.from.y, f.from.y - 40, f.to.y],
+              scale: [0.6, 1.2, 0.5],
+              opacity: [0, 1, 0.9],
+            }}
+            transition={{
+              duration: 0.85,
+              times: [0, 0.3, 1],
+              ease: 'easeInOut',
+            }}
+          >
+            {f.label}
+          </motion.div>
+        ) : (
+          <motion.div
+            key={f.id}
+            className="tile pointer-events-none fixed z-50 size-9 -translate-x-1/2 -translate-y-1/2 text-lg"
+            data-selected="true"
+            initial={{ left: f.from.x, top: f.from.y, scale: 1, opacity: 0 }}
+            animate={{
+              left: [f.from.x, (f.from.x + f.to.x) / 2, f.to.x],
+              top: [f.from.y, Math.min(f.from.y, f.to.y) - 80, f.to.y],
+              scale: [1.1, 1, 0.2],
+              rotate: [0, 180, 360],
+              opacity: [1, 1, 0],
+            }}
+            transition={{ duration: 0.7, delay: f.delay, ease: 'easeIn' }}
+          >
+            {f.label === 'QU' ? 'Qu' : f.label}
+          </motion.div>
+        )
+      )}
 
       <div className="pointer-events-none fixed inset-x-0 top-16 z-50 flex flex-col items-center gap-2 px-4 sm:inset-x-auto sm:right-4 sm:items-end">
         <AnimatePresence>

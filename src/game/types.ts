@@ -1,4 +1,4 @@
-export type GameMode = 'search' | 'worm';
+export type GameMode = 'search' | 'worm' | 'guess';
 export type DifficultyKey = 'easy' | 'medium' | 'hard' | 'expert';
 
 export interface Theme {
@@ -32,6 +32,17 @@ export interface Stats {
   gemsUsed: number;
   firesPutOut: number;
   bonusWords: number;
+  // Word Guess
+  guessPlayed: number;
+  guessWon: number;
+  guessStreak: number;
+  guessBestStreak: number;
+  guessBestTries: number | null;
+  /** Wins by number of guesses, e.g. { '3': 4 }. */
+  guessDist: Record<string, number>;
+  /** Date (YYYY-MM-DD) of the last daily word played. */
+  dailyPlayed: string | null;
+  dailyWins: number;
   // Learning
   cardsOpened: number;
 }
@@ -55,6 +66,8 @@ export interface Profile {
     mode: GameMode;
     difficulty: DifficultyKey;
     theme: string;
+    /** Word Guess: play today's word (true) or practice words. */
+    guessDaily: boolean;
   };
   /** Every word this player has found, keyed by UPPERCASE word. */
   wordBook: Record<string, WordBookEntry>;

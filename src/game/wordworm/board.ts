@@ -11,13 +11,14 @@ import { SCORING, lengthMultiplier, letterValue } from '@/game/scoring';
 export const BOARD_COLS = 7;
 export const BOARD_ROWS = 8;
 
-export type GemType = 'emerald' | 'amber' | 'sapphire' | 'diamond';
+export type GemType = 'emerald' | 'amber' | 'sapphire' | 'diamond' | 'crystal';
 
 export const GEM_MULTIPLIER: Record<GemType, number> = {
   emerald: 1.5,
   amber: 2,
   sapphire: 2.5,
   diamond: 3,
+  crystal: 4,
 };
 
 export interface Tile {
@@ -185,6 +186,9 @@ export function toggleInPath(board: Board, path: Pos[], pos: Pos): Pos[] {
 }
 
 export function gemForLength(letters: number): GemType | null {
+  if (letters >= 9) {
+    return 'crystal';
+  }
   if (letters >= 8) {
     return 'diamond';
   }

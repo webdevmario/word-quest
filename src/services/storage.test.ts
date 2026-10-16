@@ -48,6 +48,7 @@ describe('storage', () => {
       mode: 'search',
       difficulty: 'hard',
       theme: 'ocean',
+      guessDaily: true,
     });
     expect(data.settings.muted).toBe(true);
   });

@@ -127,7 +127,8 @@ describe('Word Worm board', () => {
   it('spawns a gem for a five-letter word', () => {
     expect(gemForLength(4)).toBeNull();
     expect(gemForLength(5)).toBe('emerald');
-    expect(gemForLength(9)).toBe('diamond');
+    expect(gemForLength(8)).toBe('diamond');
+    expect(gemForLength(10)).toBe('crystal');
     const board = createBoard(seededRng(4));
     const path: Pos[] = [0, 1, 2, 3, 4].map((r) => ({ c: 0, r }));
     const result = submitPath(board, path, noFire, seededRng(4));

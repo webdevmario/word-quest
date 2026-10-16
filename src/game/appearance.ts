@@ -28,4 +28,5 @@ export const GEM_COLORS = {
   amber: '#f0a830',
   sapphire: '#3a7bd5',
   diamond: '#bfe6ff',
+  crystal: '#e6d4ff',
 } as const;

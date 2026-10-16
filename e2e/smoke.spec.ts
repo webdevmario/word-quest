@@ -42,3 +42,19 @@ test('grown-ups area is behind a question', async ({ page }) => {
   await page.getByRole('button', { name: 'Continue' }).click();
   await expect(page.getByRole('tab', { name: 'Word lists' })).toBeVisible();
 });
+
+test('Word Guess colors a guess', async ({ page }) => {
+  await page.getByRole('button', { name: 'New player' }).click();
+  await page.getByLabel('Name').fill('Mia');
+  await page.getByRole('button', { name: 'Create player' }).click();
+  await page.getByRole('button', { name: /Word Guess/ }).click();
+  await page.getByRole('radio', { name: /Medium/ }).click();
+  await page.getByRole('button', { name: 'Start Word Guess' }).click();
+  await expect(page.getByRole('grid', { name: 'Your guesses' })).toBeVisible();
+  // Type a common word on the on-screen keyboard.
+  for (const letter of 'HOUSE') {
+    await page.getByRole('button', { name: new RegExp(`^${letter}$`) }).click();
+  }
+  await page.getByRole('button', { name: 'Enter guess' }).click();
+  await expect(page.getByRole('row', { name: /^HOUSE: / })).toBeVisible();
+});

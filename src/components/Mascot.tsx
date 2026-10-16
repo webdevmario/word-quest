@@ -12,6 +12,7 @@ const BODY: Variants = {
   wow: { y: [0, -22, 0], rotateY: [0, 360], transition: { duration: 0.9, ease: 'easeOut' } },
   think: { rotate: -8, y: 0, transition: { type: 'spring', stiffness: 200 } },
   oops: { rotate: [0, 6, -6, 0], y: 4, transition: { duration: 0.5 } },
+  chomp: { y: [0, -4, 0, -4, 0], rotate: [0, -4, 0, -4, 0], transition: { duration: 0.7 } },
 }; // prettier-ignore
 
 /** Inky, an original bookworm who lives in an old book and loves words. */
@@ -87,7 +88,16 @@ export function InkyArt({ mood }: { mood: MascotMood }) {
           />
         </motion.g>
         {/* Mouth */}
-        {happy ? (
+        {mood === 'chomp' ? (
+          <motion.ellipse
+            cx="62"
+            cy="54"
+            rx="7"
+            fill="#7a2a2a"
+            animate={{ ry: [6, 1, 6, 1, 6] }}
+            transition={{ duration: 0.7, repeat: Infinity }}
+          />
+        ) : happy ? (
           <path d="M54 52 q8 10 16 0 z" fill="#7a2a2a" />
         ) : mood === 'oops' ? (
           <path
@@ -114,7 +124,14 @@ export function InkyArt({ mood }: { mood: MascotMood }) {
 }
 
 /** Inky with a speech bubble driven by the celebration bus. */
-export function Mascot({ className }: { className?: string }) {
+export function Mascot({
+  className,
+  target,
+}: {
+  className?: string;
+  /** Marks Inky as the place eaten letters fly to. */
+  target?: boolean;
+}) {
   const { mood, line, id } = useFx((s) => s.mascot);
   return (
     <div className={clsx('relative', className)}>
@@ -134,6 +151,13 @@ export function Mascot({ className }: { className?: string }) {
           </motion.div>
         )}
       </AnimatePresence>
+      {target && (
+        <span
+          data-mascot-target
+          className="pointer-events-none absolute top-[42%] left-[52%] size-2"
+          aria-hidden
+        />
+      )}
       <div className="size-full" style={{ perspective: 400 }}>
         <InkyArt mood={mood} />
       </div>

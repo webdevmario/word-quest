@@ -60,7 +60,7 @@ export const DIFFICULTIES: Record<DifficultyKey, Difficulty> = {
       decoys: false,
     },
     worm: {
-      blurb: 'No fire. Take your time.',
+      blurb: 'Take your time. Fire tiles start in chapter 3.',
       minWordLength: 3,
       fireChance: 0,
       fireWordMax: 0,
@@ -82,7 +82,7 @@ export const DIFFICULTIES: Record<DifficultyKey, Difficulty> = {
       decoys: false,
     },
     worm: {
-      blurb: 'Short words can start a fire.',
+      blurb: 'Short words can start fire tiles.',
       minWordLength: 3,
       fireChance: 0.3,
       fireWordMax: 3,

@@ -35,7 +35,7 @@ export function titleProgress(points: number): number {
   return (points - current.min) / (next.min - current.min);
 }
 
-export type BadgeGroup = 'search' | 'worm' | 'learning' | 'milestone';
+export type BadgeGroup = 'search' | 'worm' | 'guess' | 'learning' | 'milestone';
 
 export interface Badge {
   id: string;
@@ -69,14 +69,19 @@ export const BADGES: Badge[] = [
   { id: 'bonus', icon: '🎁', name: 'Bonus Brain', description: 'Make the bonus word', group: 'worm', earned: (s) => s.bonusWords >= 1 },
   { id: 'big_word', icon: '💰', name: 'Jackpot', description: 'Score 300+ points with one word', group: 'worm', earned: (s) => s.wormBestWord >= 300 },
   { id: 'worm100', icon: '🍎', name: 'Hungry Worm', description: 'Make 100 words in Word Worm', group: 'worm', earned: (s) => s.wormWords >= 100 },
+  // Word Guess
+  { id: 'guess_win', icon: '🔐', name: 'Code Cracker', description: 'Solve a Word Guess', group: 'guess', earned: (s) => s.guessWon >= 1 },
+  { id: 'guess_quick', icon: '🔮', name: 'Mind Reader', description: 'Solve a Word Guess in 3 tries or fewer', group: 'guess', earned: (s) => s.guessBestTries !== null && s.guessBestTries <= 3 },
+  { id: 'guess_streak5', icon: '🎳', name: 'On a Roll', description: 'Win 5 Word Guesses in a row', group: 'guess', earned: (s) => s.guessBestStreak >= 5 },
+  { id: 'daily3', icon: '📅', name: 'Daily Reader', description: 'Solve 3 words of the day', group: 'guess', earned: (s) => s.dailyWins >= 3 },
   // Learning
   { id: 'curious', icon: '💡', name: 'Curious Mind', description: 'Open 10 word cards', group: 'learning', earned: (s) => s.cardsOpened >= 10 },
   { id: 'book25', icon: '📚', name: 'Book Lover', description: 'Collect 25 words in your Word Book', group: 'learning', earned: (_s, p) => wordBookSize(p) >= 25 },
   { id: 'book100', icon: '🏛️', name: 'Word Scholar', description: 'Collect 100 words in your Word Book', group: 'learning', earned: (_s, p) => wordBookSize(p) >= 100 },
   { id: 'book500', icon: '🎓', name: 'Walking Dictionary', description: 'Collect 500 words in your Word Book', group: 'learning', earned: (_s, p) => wordBookSize(p) >= 500 },
   // Milestones
-  { id: 'puzzles10', icon: '🎯', name: 'Dedicated', description: 'Finish 10 games', group: 'milestone', earned: (s) => s.puzzlesCompleted + s.wormGames >= 10 },
-  { id: 'puzzles50', icon: '🏅', name: 'Unstoppable', description: 'Finish 50 games', group: 'milestone', earned: (s) => s.puzzlesCompleted + s.wormGames >= 50 },
+  { id: 'puzzles10', icon: '🎯', name: 'Dedicated', description: 'Finish 10 games', group: 'milestone', earned: (s) => s.puzzlesCompleted + s.wormGames + s.guessPlayed >= 10 },
+  { id: 'puzzles50', icon: '🏅', name: 'Unstoppable', description: 'Finish 50 games', group: 'milestone', earned: (s) => s.puzzlesCompleted + s.wormGames + s.guessPlayed >= 50 },
 ]; // prettier-ignore
 
 /** Marks newly earned badges on the profile and returns them. */
@@ -113,6 +118,14 @@ export const defaultStats = (): Stats => ({
   gemsUsed: 0,
   firesPutOut: 0,
   bonusWords: 0,
+  guessPlayed: 0,
+  guessWon: 0,
+  guessStreak: 0,
+  guessBestStreak: 0,
+  guessBestTries: null,
+  guessDist: {},
+  dailyPlayed: null,
+  dailyWins: 0,
   cardsOpened: 0,
 });
 

@@ -29,14 +29,24 @@ export interface WordCelebration {
   chips: string[];
 }
 
-export type MascotMood = 'idle' | 'cheer' | 'wow' | 'think' | 'oops';
+export type MascotMood = 'idle' | 'cheer' | 'wow' | 'think' | 'oops' | 'chomp';
+
+export interface Flyer {
+  id: number;
+  from: Point;
+  to: Point;
+  /** Points fly to the score; letters fly into Inky's mouth. */
+  label: string;
+  kind: 'points' | 'letter';
+  delay: number;
+}
 
 interface FxState {
   word: WordCelebration | null;
   toasts: { id: number; badge: Badge }[];
   title: { id: number; title: Title } | null;
   mascot: { mood: MascotMood; line: string | null; id: number };
-  flyers: { id: number; from: Point; to: Point; points: number }[];
+  flyers: Flyer[];
 }
 
 let state: FxState = {
@@ -69,9 +79,25 @@ const centerOf = (r: DOMRect): Point => ({
   y: r.top + r.height / 2,
 });
 
-function scoreTarget(): Point | null {
-  const el = document.querySelector('[data-score-target]');
-  return el ? centerOf(el.getBoundingClientRect()) : null;
+/** Center of the first visible element matching the selector. */
+function visibleTarget(selector: string): Point | null {
+  for (const el of document.querySelectorAll<HTMLElement>(selector)) {
+    const rect = el.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) {
+      return centerOf(rect);
+    }
+  }
+  return null;
+}
+
+function addFlyers(flyers: Omit<Flyer, 'id'>[], lifetime: number) {
+  const added = flyers.map((f) => ({ ...f, id: nextId++ }));
+  set({ flyers: [...state.flyers, ...added] });
+  const ids = new Set(added.map((f) => f.id));
+  setTimeout(
+    () => set({ flyers: state.flyers.filter((f) => !ids.has(f.id)) }),
+    lifetime
+  );
 }
 
 const CHEERS: Record<Tier, string[]> = {
@@ -105,6 +131,10 @@ export interface CelebrateInput {
   /** The board's rect; the banner centers on it. */
   board: DOMRect;
   chips?: string[];
+  /** Word Worm: the letters fly into Inky's mouth, like Lex in Bookworm. */
+  feedInky?: boolean;
+  /** Tile labels in order, for the letters Inky eats. */
+  letters?: string[];
 }
 
 let wordTimer: ReturnType<typeof setTimeout> | undefined;
@@ -169,19 +199,39 @@ export function celebrate(input: CelebrateInput) {
     big ? 1900 : 1300
   );
 
-  const to = scoreTarget();
+  const to = visibleTarget('[data-score-target]');
   if (to) {
-    const flyer = { id: nextId++, from, to, points: input.points };
-    set({ flyers: [...state.flyers, flyer] });
-    setTimeout(
-      () => set({ flyers: state.flyers.filter((f) => f.id !== flyer.id) }),
-      900
+    addFlyers(
+      [{ from, to, label: `+${input.points}`, kind: 'points', delay: 0 }],
+      1000
+    );
+  }
+
+  const mouth = input.feedInky ? visibleTarget('[data-mascot-target]') : null;
+  if (mouth) {
+    addFlyers(
+      tiles.map((rect, i) => ({
+        from: centerOf(rect),
+        to: mouth,
+        label: input.letters?.[i] ?? '',
+        kind: 'letter' as const,
+        delay: i * 0.06,
+      })),
+      1200 + tiles.length * 60
     );
   }
 
   sound.success(tier, input.word.length);
   buzz(tier);
-  mascotSay(big ? 'wow' : 'cheer', pickLine(CHEERS[tier]));
+  if (mouth) {
+    mascotSay('chomp', null, 700 + tiles.length * 60);
+    setTimeout(
+      () => mascotSay(big ? 'wow' : 'cheer', pickLine(CHEERS[tier])),
+      700 + tiles.length * 60
+    );
+  } else {
+    mascotSay(big ? 'wow' : 'cheer', pickLine(CHEERS[tier]));
+  }
 }
 
 export function badgeToast(badge: Badge) {

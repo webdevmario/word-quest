@@ -1,6 +1,6 @@
 # CLAUDE.md — Word Quest
 
-Word game for kids (two children share a device): themed Word Search and a Bookworm-style mode called Word Worm, with profiles, points, titles, badges, a Word Book and kid-friendly definitions. React 19 + TypeScript + Vite + Tailwind v4 + Motion. No backend; data lives in localStorage.
+Word game for kids (two children share a device): themed Word Search, a Bookworm-style mode called Word Worm, and a Wordle-style Word Guess, with profiles, points, titles, badges, a Word Book and kid-friendly definitions. React 19 + TypeScript + Vite + Tailwind v4 + Motion. No backend; data lives in localStorage.
 
 ## Commands
 
@@ -17,7 +17,9 @@ npm run test:e2e   # Playwright smoke tests (starts the dev server)
 - `src/services/storage.ts` is the only file that touches localStorage. Bump the key and add a migration in `normalizeData` when the schema changes.
 - `src/fx/fxBus.ts` drives celebrations. Game code calls `celebrate()`, `queueBadges()`, `titleReveal()` and `mascotSay()`; `<FxLayer />` draws them. Sounds are synthesized in `fx/sound.ts`, so there are no audio files.
 - Word Worm board: column-major `columns[c][r]`, row 0 at the top, odd columns shifted half a tile down. `neighbors()` encodes that. Tiles keep an `id` so React/Motion can animate gravity.
-- Navigation is a small context (`app/nav.tsx`), not a router.
+- Navigation is a small context (`app/nav.tsx`), not a router. Game screens are lazy-loaded in `app/App.tsx`.
+- Word Worm fire difficulty lives in `game/wordworm/rules.ts`; Word Guess rules, scoring and the daily word in `game/wordguess/guess.ts`.
+- Word Search deliberately hides each word's point value; points only show when a word is found.
 
 ## Conventions
 

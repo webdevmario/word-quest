@@ -11,10 +11,35 @@ import { allThemes } from '@/game/catalog';
 import { DIFFICULTIES, DIFFICULTY_ORDER } from '@/game/difficulty';
 import { MIX_THEME } from '@/game/themes';
 import type { GameMode } from '@/game/types';
+import { GUESS_RULES, todayKey } from '@/game/wordguess/guess';
 import { setPrefs } from '@/store/actions';
 import { useAppData } from '@/store/appStore';
 
 import type { ReactNode } from 'react';
+
+const START_LABELS: Record<GameMode, string> = {
+  search: 'Start Word Search',
+  worm: 'Start Word Worm',
+  guess: 'Start Word Guess',
+};
+
+function MiniGuess() {
+  const colors = ['#2eb872', '#5e4a3a', '#e8a12a', '#2eb872', '#5e4a3a'];
+  return (
+    <div className="flex gap-0.5" aria-hidden>
+      {[...'GUESS'].map((ch, i) => (
+        <span
+          key={i}
+          className="tile size-6 text-xs"
+          data-found=""
+          style={{ ['--found' as string]: colors[i] }}
+        >
+          {ch}
+        </span>
+      ))}
+    </div>
+  );
+}
 
 function ModeCard({
   selected,
@@ -36,7 +61,7 @@ function ModeCard({
       onClick={onSelect}
       whileTap={{ scale: 0.98 }}
       className={clsx(
-        'relative flex items-center gap-4 overflow-hidden rounded-[24px] p-4 text-left transition',
+        'relative flex items-center gap-4 overflow-hidden rounded-[24px] p-4 text-left transition sm:flex-col sm:items-start sm:gap-3',
         selected
           ? 'paper ring-4 ring-gilt-300'
           : 'bg-black/20 text-parchment-100 ring-1 ring-white/10 hover:bg-black/30'
@@ -95,6 +120,7 @@ export function SetupScreen() {
     setPrefs(profile.id, prefs);
   const themes = allThemes(customLists);
   const level = DIFFICULTIES[difficulty];
+  const dailyDone = profile.stats.dailyPlayed === todayKey();
 
   return (
     <main className="mx-auto max-w-4xl px-4 pt-4 pb-28">
@@ -124,7 +150,7 @@ export function SetupScreen() {
       <h2 className="mt-8 mb-3 font-display text-2xl text-parchment-100">
         What do you want to play?
       </h2>
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-3">
         {(
           [
             [
@@ -140,6 +166,12 @@ export function SetupScreen() {
               <div key="w" className="size-16">
                 <InkyArt mood="idle" />
               </div>,
+            ],
+            [
+              'guess',
+              'Word Guess',
+              'Guess the secret word. Colors give you clues.',
+              <MiniGuess key="q" />,
             ],
           ] as [GameMode, string, string, ReactNode][]
         ).map(([m, title, blurb, art]) => (
@@ -198,8 +230,60 @@ export function SetupScreen() {
         })}
       </div>
       <p className="mt-2 px-2 text-parchment-300">
-        {mode === 'search' ? level.search.blurb : level.worm.blurb}
+        {mode === 'search'
+          ? level.search.blurb
+          : mode === 'worm'
+            ? level.worm.blurb
+            : GUESS_RULES[difficulty].blurb}
       </p>
+
+      {mode === 'guess' && (
+        <>
+          <h2 className="mt-8 mb-3 font-display text-2xl text-parchment-100">
+            Which word?
+          </h2>
+          <div className="grid grid-cols-2 gap-2">
+            {(
+              [
+                [
+                  true,
+                  '📅 Word of the day',
+                  dailyDone
+                    ? 'Done for today. Come back tomorrow!'
+                    : 'A new secret word every day.',
+                ],
+                [false, '🎲 Practice words', 'Play as many as you like.'],
+              ] as [boolean, string, string][]
+            ).map(([daily, title, help]) => {
+              const active = profile.prefs.guessDaily === daily;
+              return (
+                <button
+                  key={title}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => update({ guessDaily: daily })}
+                  className={clsx(
+                    'rounded-2xl px-4 py-3 text-left transition',
+                    active
+                      ? 'paper ring-2 ring-gilt-400'
+                      : 'bg-black/20 text-parchment-100 hover:bg-black/30'
+                  )}
+                >
+                  <span className="block font-bold">{title}</span>
+                  <span
+                    className={clsx(
+                      'text-sm',
+                      active ? 'text-ink-soft' : 'text-parchment-300'
+                    )}
+                  >
+                    {help}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
 
       {mode === 'search' && (
         <>
@@ -250,7 +334,7 @@ export function SetupScreen() {
             className="w-full"
             onClick={() => go(mode)}
           >
-            {mode === 'search' ? 'Start Word Search' : 'Start Word Worm'}
+            {START_LABELS[mode]}
           </Button>
         </div>
       </div>
