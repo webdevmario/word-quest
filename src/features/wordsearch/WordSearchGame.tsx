@@ -387,7 +387,7 @@ export function WordSearchGame() {
             ref={scope}
             role="grid"
             aria-label={`Word search, ${puzzle.size} by ${puzzle.size}`}
-            className="grid touch-none gap-[3px] select-none [--board:min(calc(100vw-48px),calc(100dvh-230px),600px)] lg:[--board:min(calc(100dvh-140px),620px)]"
+            className="grid touch-none gap-[3px] select-none [--board:min(calc(100vw-48px),calc(100dvh-230px-var(--safe-top)-var(--safe-bottom)),600px)] lg:[--board:min(calc(100dvh-140px-var(--safe-top)-var(--safe-bottom)),620px)]"
             style={{
               width: 'var(--board)',
               height: 'var(--board)',

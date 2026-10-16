@@ -60,9 +60,16 @@ export function PlayerBanner({
           />
         </div>
         <p className="mt-1.5 text-sm text-parchment-300">
-          {next
-            ? `${(next.min - profile.points).toLocaleString()} points to ${next.icon} ${next.name}`
-            : 'You reached the top title!'}
+          {next ? (
+            <>
+              {(next.min - profile.points).toLocaleString()} points to{' '}
+              <span className="whitespace-nowrap">
+                {next.icon} {next.name}
+              </span>
+            </>
+          ) : (
+            'You reached the top title!'
+          )}
         </p>
       </div>
       <div className="hidden text-right sm:block">

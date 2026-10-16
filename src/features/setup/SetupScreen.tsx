@@ -67,7 +67,7 @@ function ModeCard({
           : 'bg-black/20 text-parchment-100 ring-1 ring-white/10 hover:bg-black/30'
       )}
     >
-      <div className="shrink-0">{art}</div>
+      <div className="shrink-0 sm:flex sm:h-24 sm:items-center">{art}</div>
       <div>
         <h3 className="font-display text-2xl font-semibold">{title}</h3>
         <p
@@ -326,7 +326,7 @@ export function SetupScreen() {
         </>
       )}
 
-      <div className="fixed inset-x-0 bottom-0 z-10 bg-gradient-to-t from-felt-950 via-felt-950/90 to-transparent px-4 pt-8 pb-5">
+      <div className="fixed inset-x-0 bottom-0 z-10 bg-gradient-to-t from-felt-950 via-felt-950/90 to-transparent px-4 pt-8 pb-[max(1.25rem,var(--safe-bottom))]">
         <div className="mx-auto max-w-md">
           <Button
             variant="gilt"

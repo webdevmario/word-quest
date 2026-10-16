@@ -67,7 +67,7 @@ export function WordBookScreen() {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search your words"
+              placeholder="Find a word"
               className="h-12 w-full rounded-2xl bg-parchment-100 pr-4 pl-10 text-ink outline-none focus:ring-4 focus:ring-gilt-300/60"
             />
           </label>

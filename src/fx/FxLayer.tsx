@@ -201,14 +201,15 @@ export function FxLayer() {
         )
       )}
 
-      <div className="pointer-events-none fixed inset-x-0 top-16 z-50 flex flex-col items-center gap-2 px-4 sm:inset-x-auto sm:right-4 sm:items-end">
+      <div className="pointer-events-none fixed inset-x-0 top-[calc(4rem+var(--safe-top))] z-50 flex flex-col items-center gap-2 px-4 sm:inset-x-auto sm:right-4 sm:items-end">
         <AnimatePresence>
           {toasts.map((t) => (
             <motion.div
               key={t.id}
+              layout
               className="paper flex items-center gap-3 rounded-2xl py-2 pr-5 pl-2"
-              initial={{ y: -80, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
+              initial={{ y: -24, scale: 0.9, opacity: 0 }}
+              animate={{ y: 0, scale: 1, opacity: 1 }}
               exit={{ y: -40, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 20 }}
               role="status"

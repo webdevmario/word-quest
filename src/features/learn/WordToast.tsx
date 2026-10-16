@@ -36,7 +36,7 @@ export function WordToast({
   }, [item, onDone]);
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-4 z-20 flex justify-center px-4">
+    <div className="pointer-events-none fixed inset-x-0 bottom-[max(1rem,var(--safe-bottom))] z-20 grid justify-items-center px-4">
       <AnimatePresence>
         {item && (
           <motion.button
@@ -46,7 +46,7 @@ export function WordToast({
               openCard(item.word);
               onDone();
             }}
-            className="paper pointer-events-auto flex w-full max-w-md items-center gap-3 rounded-2xl px-4 py-3 text-left"
+            className="paper pointer-events-auto col-start-1 row-start-1 flex w-full max-w-md items-center gap-3 rounded-2xl px-4 py-3 text-left"
             initial={{ y: 80, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 60, opacity: 0 }}

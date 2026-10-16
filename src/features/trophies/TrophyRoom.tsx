@@ -9,12 +9,15 @@ import { Button } from '@/components/ui/Button';
 import { BADGES, TITLES, titleFor } from '@/game/progression';
 import type { BadgeGroup } from '@/game/progression';
 
-const GROUPS: [BadgeGroup, string][] = [
-  ['search', 'Word Search'],
-  ['worm', 'Word Worm'],
-  ['learning', 'Learning'],
-  ['milestone', 'Milestones'],
-];
+// A Record so a new badge group can't be left off the shelf.
+const GROUP_LABELS: Record<BadgeGroup, string> = {
+  search: 'Word Search',
+  worm: 'Word Worm',
+  guess: 'Word Guess',
+  learning: 'Learning',
+  milestone: 'Milestones',
+};
+const GROUPS = Object.entries(GROUP_LABELS) as [BadgeGroup, string][];
 
 export function TrophyRoom() {
   const { go } = useNav();

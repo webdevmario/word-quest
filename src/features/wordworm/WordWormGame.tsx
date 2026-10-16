@@ -276,7 +276,8 @@ export function WordWormGame() {
         sound.fanfare();
         announce(addPoints(profile.id, bonusPoints));
         setTimeout(() => setChapterBanner(null), 2600);
-      }, 1700);
+        // Wait for the word celebration to clear so the two don't overlap.
+      }, 2200);
     }
 
     if (result.gameOver) {
@@ -407,7 +408,7 @@ export function WordWormGame() {
 
   if (error) {
     return (
-      <main className="mx-auto grid min-h-dvh max-w-md place-items-center px-4 text-center">
+      <main className="mx-auto grid min-h-safe max-w-md place-items-center px-4 text-center">
         <div className="paper rounded-[28px] p-6">
           <p className="font-display text-2xl">{error}</p>
           <div className="mt-5 flex gap-3">
@@ -424,6 +425,8 @@ export function WordWormGame() {
   }
 
   const tokens = path.map((p) => tileAt(board, p)?.letter ?? '');
+  // Long words shrink on phones so they fit on one line.
+  const long = tokens.length > 4;
 
   return (
     <main className="mx-auto max-w-5xl px-3 pt-3 pb-24 sm:px-4">
@@ -541,12 +544,22 @@ export function WordWormGame() {
             aria-live="polite"
           >
             <Mascot className="-my-2 h-16 w-14 shrink-0 lg:hidden" target />
-            <div className="flex min-w-0 flex-1 flex-wrap gap-1">
+            <div
+              className={clsx(
+                'flex min-w-0 flex-1 flex-wrap',
+                long ? 'gap-0.5 sm:gap-1' : 'gap-1'
+              )}
+            >
               <AnimatePresence initial={false}>
                 {tokens.map((letter, i) => (
                   <motion.span
                     key={`${i}-${letter}`}
-                    className="tile size-8 text-lg"
+                    className={clsx(
+                      'tile',
+                      long
+                        ? 'size-6 text-sm sm:size-8 sm:text-lg'
+                        : 'size-8 text-lg'
+                    )}
                     initial={{ scale: 0, y: 10 }}
                     animate={{ scale: 1, y: 0 }}
                     exit={{ scale: 0 }}
@@ -593,7 +606,7 @@ export function WordWormGame() {
               size="sm"
               onClick={onShuffle}
               disabled={!shuffles || over}
-              className="!h-16 flex-col gap-0.5"
+              className="!h-16 flex-col gap-0.5 !px-1 whitespace-nowrap"
             >
               <Shuffle className="size-5" aria-hidden />
               <span className="text-xs">Shuffle {shuffles}</span>
@@ -603,7 +616,7 @@ export function WordWormGame() {
               size="sm"
               onClick={onHint}
               disabled={!hints || !dict || over}
-              className="!h-16 flex-col gap-0.5"
+              className="!h-16 flex-col gap-0.5 !px-1 whitespace-nowrap"
             >
               <Lightbulb className="size-5" aria-hidden />
               <span className="text-xs">Ask Inky {hints}</span>
@@ -613,7 +626,7 @@ export function WordWormGame() {
               size="sm"
               onClick={() => setPath([])}
               disabled={!path.length}
-              className="!h-16 flex-col gap-0.5"
+              className="!h-16 flex-col gap-0.5 !px-1 whitespace-nowrap"
             >
               <Undo2 className="size-5" aria-hidden />
               <span className="text-xs">Clear</span>
@@ -624,7 +637,7 @@ export function WordWormGame() {
               onClick={() => (valid ? submit() : onNotAWord())}
               disabled={!path.length || over}
               className={clsx(
-                '!h-16 flex-col gap-0.5',
+                '!h-16 flex-col gap-0.5 !px-1 whitespace-nowrap',
                 valid && 'ring-4 ring-emerald/70'
               )}
             >
@@ -653,7 +666,7 @@ export function WordWormGame() {
       <AnimatePresence>
         {chapterBanner && (
           <motion.div
-            className="pointer-events-none fixed inset-x-0 top-1/3 z-40 text-center"
+            className="pointer-events-none fixed inset-x-0 top-1/3 z-20 text-center"
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ opacity: 0, y: -40 }}

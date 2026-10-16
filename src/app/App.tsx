@@ -10,6 +10,7 @@ import { ProfileEditor } from '@/features/profiles/ProfileEditor';
 import { SetupScreen } from '@/features/setup/SetupScreen';
 import { FxLayer } from '@/fx/FxLayer';
 import { setMuted } from '@/fx/sound';
+import { setSafeToReload } from '@/services/pwa';
 import { useAppData } from '@/store/appStore';
 
 import type { ComponentType } from 'react';
@@ -66,6 +67,8 @@ function Screens() {
   useEffect(() => {
     void loadDictionary().catch(() => undefined);
   }, []);
+  // A new version installs only on the home screen, never mid-game.
+  useEffect(() => setSafeToReload(screen === 'home'), [screen]);
 
   const Current = SCREENS[screen];
   return (

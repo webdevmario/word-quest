@@ -4,6 +4,7 @@ import { motion } from 'motion/react';
 
 import { useNav } from '@/app/nav';
 import { BookCover } from '@/components/BookCover';
+import { InstallButton } from '@/components/InstallButton';
 import { Logo } from '@/components/Logo';
 import { InkyArt } from '@/components/Mascot';
 import { titleFor } from '@/game/progression';
@@ -39,6 +40,21 @@ function ShelfSlot({
   );
 }
 
+/**
+ * Inky sits at the end of the shelf, but only where he shares a row with a
+ * book: on his own he'd sit alone on an empty plank. Shelves hold 2, 3 or 4
+ * slots (w-52 each) depending on the width; phones skip him. Breakpoints are
+ * in rem so they sort after `sm`.
+ */
+function inkyVisibility(slots: number) {
+  return clsx(
+    'hidden',
+    slots % 2 !== 0 && 'sm:flex',
+    slots % 3 !== 0 ? 'min-[41rem]:flex' : 'min-[41rem]:hidden',
+    slots % 4 !== 0 ? 'min-[54rem]:flex' : 'min-[54rem]:hidden'
+  );
+}
+
 function Plank() {
   return <span className="wood block h-5 w-52 rounded-[3px]" aria-hidden />;
 }
@@ -46,9 +62,10 @@ function Plank() {
 export function HomeScreen() {
   const { go } = useNav();
   const profiles = useAppData((d) => d.profiles);
+  const slots = profiles.length + (profiles.length < MAX_PLAYERS ? 1 : 0);
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-5xl flex-col px-4 pt-10 pb-8 sm:pt-16">
+    <main className="mx-auto flex min-h-safe max-w-5xl flex-col px-4 pt-10 pb-8 sm:pt-16">
       <Logo />
       <p className="mt-6 text-center font-display text-2xl text-parchment-200 sm:text-3xl">
         {profiles.length
@@ -117,19 +134,22 @@ export function HomeScreen() {
           </ShelfSlot>
         )}
 
-        <ShelfSlot delay={0.9} className="hidden sm:flex" decorative>
+        <ShelfSlot delay={0.9} className={inkyVisibility(slots)} decorative>
           <div className="flex h-52 w-28 items-end">
-            <InkyArt mood="idle" />
+            <div className="aspect-[12/13] w-full">
+              <InkyArt mood="idle" />
+            </div>
           </div>
           <Plank />
         </ShelfSlot>
       </section>
 
-      <div className="mt-auto flex justify-end pt-16">
+      <div className="mt-auto flex flex-wrap justify-between gap-2 pt-16">
+        <InstallButton />
         <button
           type="button"
           onClick={() => go('parent')}
-          className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-parchment-300 hover:bg-white/5 hover:text-parchment-100"
+          className="ml-auto flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-parchment-300 hover:bg-white/5 hover:text-parchment-100"
         >
           <Settings2 className="size-4" aria-hidden /> Grown-ups
         </button>

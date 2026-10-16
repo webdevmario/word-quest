@@ -25,7 +25,9 @@ function Section({
 }) {
   return (
     <section className="flex gap-3 border-t border-dashed border-parchment-400/60 py-3">
-      <div className="flex w-16 shrink-0 justify-center pt-1">{art}</div>
+      <div className="flex w-16 shrink-0 items-start justify-center pt-1">
+        {art}
+      </div>
       <div>
         <h3 className="font-bold">{title}</h3>
         <p className="text-sm text-ink-soft">{children}</p>
