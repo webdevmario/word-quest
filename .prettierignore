@@ -1,6 +1,5 @@
 dist
 coverage
-prototype
 public/dict
 package-lock.json
 playwright-report

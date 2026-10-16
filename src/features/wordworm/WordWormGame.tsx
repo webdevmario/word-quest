@@ -444,12 +444,14 @@ export function WordWormGame() {
             aria-expanded={showClue}
           >
             <span className="flex items-center justify-between text-sm font-bold text-gilt-300">
-              <span>
-                🎁 Bonus word, {bonus.word.length} letters, ×
-                {SCORING.bonusWordMultiplier} points
+              <span className="flex items-center gap-2">
+                🎁 Bonus word: {bonus.word.length} letters
+                <span className="rounded-full bg-gilt-300 px-2 text-xs text-ink">
+                  ×{SCORING.bonusWordMultiplier}
+                </span>
               </span>
-              <span className="text-xs text-parchment-300">
-                {showClue ? 'Hide letter' : 'Show first letter'}
+              <span className="text-xs whitespace-nowrap text-parchment-300">
+                {showClue ? 'Hide hint' : 'First letter'}
               </span>
             </span>
             <span className="mt-0.5 block text-parchment-100">

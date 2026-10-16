@@ -120,22 +120,8 @@ export function HexBoard({
                     data-tile-id={tile.id}
                     role="gridcell"
                     aria-label={`${label}${tile.fire ? ', on fire' : ''}${tile.gem ? `, ${tile.gem} gem` : ''}${order !== undefined ? ', selected' : ''}`}
-                    className="tile absolute"
-                    data-selected={order !== undefined ? 'true' : undefined}
-                    data-gem={tile.gem ?? undefined}
-                    data-fire={tile.fire ? 'true' : undefined}
-                    data-hint={hintIds.has(tile.id) ? 'true' : undefined}
-                    style={{
-                      width: t - gap,
-                      height: t - gap,
-                      left: 0,
-                      top: 0,
-                      fontSize:
-                        (t - gap) * (tile.letter.length > 1 ? 0.46 : 0.58),
-                      ['--gem' as string]: tile.gem
-                        ? GEM_COLORS[tile.gem]
-                        : undefined,
-                    }}
+                    className="absolute"
+                    style={{ width: t - gap, height: t - gap, left: 0, top: 0 }}
                     initial={{ x, y: y - t * 2.2, opacity: 0, scale: 0.8 }}
                     animate={{ x, y, opacity: 1, scale: 1, rotate: 0 }}
                     exit={{
@@ -151,14 +137,30 @@ export function HexBoard({
                       mass: 0.9,
                     }}
                   >
-                    {label}
-                    <span
-                      className="pointer-events-none absolute right-[9%] bottom-[5%] font-sans font-extrabold opacity-55"
-                      style={{ fontSize: (t - gap) * 0.18 }}
-                      aria-hidden
+                    {/* Position lives on the wrapper; effects live on the tile. */}
+                    <div
+                      className="tile size-full"
+                      data-selected={order !== undefined ? 'true' : undefined}
+                      data-gem={tile.gem ?? undefined}
+                      data-fire={tile.fire ? 'true' : undefined}
+                      data-hint={hintIds.has(tile.id) ? 'true' : undefined}
+                      style={{
+                        fontSize:
+                          (t - gap) * (tile.letter.length > 1 ? 0.46 : 0.58),
+                        ['--gem' as string]: tile.gem
+                          ? GEM_COLORS[tile.gem]
+                          : undefined,
+                      }}
                     >
-                      {letterValue(tile.letter)}
-                    </span>
+                      {label}
+                      <span
+                        className="pointer-events-none absolute right-[9%] bottom-[5%] font-sans font-extrabold opacity-55"
+                        style={{ fontSize: (t - gap) * 0.18 }}
+                        aria-hidden
+                      >
+                        {letterValue(tile.letter)}
+                      </span>
+                    </div>
                   </motion.div>
                 );
               })
