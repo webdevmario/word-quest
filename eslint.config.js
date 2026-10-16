@@ -64,6 +64,8 @@ export default tseslint.config(
       'react/prop-types': 'off',
       // False positives for packages like clsx that export the same name both ways.
       'import-x/no-named-as-default': 'off',
+      // Vite plugin modules such as virtual:pwa-register exist only at build time.
+      'import-x/no-unresolved': ['error', { ignore: ['^virtual:'] }],
     },
   },
   {

@@ -4,6 +4,7 @@ import { motion } from 'motion/react';
 
 import { useNav } from '@/app/nav';
 import { BookCover } from '@/components/BookCover';
+import { InstallButton } from '@/components/InstallButton';
 import { Logo } from '@/components/Logo';
 import { InkyArt } from '@/components/Mascot';
 import { titleFor } from '@/game/progression';
@@ -125,11 +126,12 @@ export function HomeScreen() {
         </ShelfSlot>
       </section>
 
-      <div className="mt-auto flex justify-end pt-16">
+      <div className="mt-auto flex flex-wrap justify-between gap-2 pt-16">
+        <InstallButton />
         <button
           type="button"
           onClick={() => go('parent')}
-          className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-parchment-300 hover:bg-white/5 hover:text-parchment-100"
+          className="ml-auto flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-parchment-300 hover:bg-white/5 hover:text-parchment-100"
         >
           <Settings2 className="size-4" aria-hidden /> Grown-ups
         </button>
