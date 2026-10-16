@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import { motion } from 'motion/react';
 import { useEffect } from 'react';
 
@@ -68,7 +69,18 @@ export function WormResults({
             </div>
             <div className="rounded-2xl bg-white/60 p-2">
               <dt className="text-xs text-ink-soft">Longest</dt>
-              <dd className="truncate text-xl font-bold">{longest || '—'}</dd>
+              <dd
+                className={clsx(
+                  'truncate font-bold',
+                  longest.length > 7
+                    ? 'text-sm leading-7'
+                    : longest.length > 5
+                      ? 'text-base leading-7'
+                      : 'text-xl'
+                )}
+              >
+                {longest || '—'}
+              </dd>
             </div>
             <div className="rounded-2xl bg-white/60 p-2">
               <dt className="text-xs text-ink-soft">Chapter</dt>
@@ -91,10 +103,14 @@ export function WormResults({
             </p>
           )}
           <div className="mt-6 flex gap-3">
-            <Button className="flex-1" onClick={onChangeGame}>
+            <Button className="flex-1 !px-3" onClick={onChangeGame}>
               Change game
             </Button>
-            <Button variant="gilt" className="flex-1" onClick={onPlayAgain}>
+            <Button
+              variant="gilt"
+              className="flex-1 !px-3"
+              onClick={onPlayAgain}
+            >
               Play again
             </Button>
           </div>

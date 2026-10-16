@@ -47,11 +47,15 @@ export function PuzzleResults({
     : [];
 
   return (
-    <Modal open={!!data} title="Puzzle complete!" className="text-center">
+    <Modal
+      open={!!data}
+      title="Puzzle complete!"
+      className="mt-12 pt-16 text-center"
+    >
       {data && (
         <>
           <motion.div
-            className="mx-auto -mt-16 mb-2 grid size-24 place-items-center rounded-full bg-gradient-to-b from-gilt-200 via-gilt-400 to-gilt-500 text-5xl shadow-xl ring-4 ring-parchment-50"
+            className="absolute -top-12 left-1/2 -ml-12 grid size-24 place-items-center rounded-full bg-gradient-to-b from-gilt-200 via-gilt-400 to-gilt-500 text-5xl shadow-xl ring-4 ring-parchment-50"
             style={{ perspective: 600 }}
             initial={{ rotateY: 0, scale: 0 }}
             animate={{ rotateY: 720, scale: 1 }}
@@ -107,10 +111,14 @@ export function PuzzleResults({
             </div>
           )}
           <div className="mt-6 flex gap-3">
-            <Button className="flex-1" onClick={onChangeGame}>
+            <Button className="flex-1 !px-3" onClick={onChangeGame}>
               Change game
             </Button>
-            <Button variant="gilt" className="flex-1" onClick={onPlayAgain}>
+            <Button
+              variant="gilt"
+              className="flex-1 !px-3"
+              onClick={onPlayAgain}
+            >
               Play again
             </Button>
           </div>

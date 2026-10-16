@@ -440,7 +440,7 @@ export function ParentArea() {
 
   const tabs: [Tab, string][] = [
     ['lists', 'Word lists'],
-    ['rules', 'Word Worm words'],
+    ['rules', 'Word Worm'],
     ['settings', 'Settings'],
   ];
 
@@ -465,7 +465,7 @@ export function ParentArea() {
             aria-selected={tab === value}
             onClick={() => setTab(value)}
             className={clsx(
-              'flex-1 rounded-xl px-3 py-2.5 font-bold transition',
+              'flex-1 rounded-xl px-2 py-2.5 text-sm font-bold transition sm:px-3 sm:text-base',
               tab === value
                 ? 'bg-gilt-300 text-ink'
                 : 'text-parchment-200 hover:bg-white/5'

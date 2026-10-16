@@ -44,6 +44,13 @@
 }
 
 @layer base {
+  :root {
+    /* Notch and home-bar space when installed (black-translucent status bar). */
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+  }
   html {
     color-scheme: dark;
     -webkit-tap-highlight-color: transparent;
@@ -51,6 +58,8 @@
   body {
     @apply bg-felt-900 font-sans text-parchment-100 antialiased;
     min-height: 100dvh;
+    padding: var(--safe-top) var(--safe-right) var(--safe-bottom)
+      var(--safe-left);
     /* Felt: a soft spotlight over fine fibers. */
     background-image:
       radial-gradient(120% 80% at 50% 0%, #245a42 0%, transparent 60%),
@@ -66,6 +75,11 @@
     outline-offset: 3px;
     border-radius: 10px;
   }
+}
+
+/* A full-height screen inside the safe area. */
+@utility min-h-safe {
+  min-height: calc(100dvh - var(--safe-top) - var(--safe-bottom));
 }
 
 @layer components {

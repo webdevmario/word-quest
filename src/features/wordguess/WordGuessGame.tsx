@@ -57,6 +57,15 @@ interface Result {
   badges: Badge[];
 }
 
+/** Window height minus the notch and home bar (the body's safe-area padding). */
+function usableHeight() {
+  const style = getComputedStyle(document.body);
+  const insets =
+    (parseFloat(style.paddingTop) || 0) +
+    (parseFloat(style.paddingBottom) || 0);
+  return window.innerHeight - insets;
+}
+
 export function WordGuessGame() {
   const { go, openCard } = useNav();
   const profile = useCurrentProfile();
@@ -95,11 +104,9 @@ export function WordGuessGame() {
   const [result, setResult] = useState<Result | null>(null);
   const [score, setScore] = useState(0);
   const gridRef = useRef<HTMLDivElement>(null);
-  const [viewportHeight, setViewportHeight] = useState(
-    () => window.innerHeight
-  );
+  const [viewportHeight, setViewportHeight] = useState(usableHeight);
   useEffect(() => {
-    const onResize = () => setViewportHeight(window.innerHeight);
+    const onResize = () => setViewportHeight(usableHeight());
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
@@ -110,7 +117,8 @@ export function WordGuessGame() {
     guesses.length >= rules.maxGuesses ||
     guesses.some((g) => g.word === round.answer);
   const meaning = localMeaning(round.answer, custom);
-  const keys = keyboardStates(guesses);
+  // Keys take their colors once the row has flipped, so they don't spoil it.
+  const keys = keyboardStates(busy ? guesses.slice(0, -1) : guesses);
   const tileSize = Math.max(
     34,
     Math.min(
@@ -289,7 +297,7 @@ export function WordGuessGame() {
   const maxDist = Math.max(1, ...Object.values(s.guessDist));
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-3xl flex-col px-3 pt-3 pb-4 sm:px-4">
+    <main className="mx-auto flex min-h-safe max-w-3xl flex-col px-3 pt-3 pb-4 sm:px-4">
       <GameHud
         score={score}
         onQuit={() => go('setup')}
@@ -433,12 +441,12 @@ export function WordGuessGame() {
             </div>
 
             <div className="mt-6 flex gap-3">
-              <Button className="flex-1" onClick={() => go('setup')}>
+              <Button className="flex-1 !px-3" onClick={() => go('setup')}>
                 Change game
               </Button>
               <Button
                 variant="gilt"
-                className="flex-1"
+                className="flex-1 !px-3"
                 onClick={() => {
                   playAgain();
                   if (result.won) {

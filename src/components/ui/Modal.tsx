@@ -50,7 +50,7 @@ export function Modal({
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-30 grid place-items-center overflow-y-auto bg-felt-950/70 p-4 backdrop-blur-[3px]"
+          className="fixed inset-0 z-30 grid place-items-center overflow-y-auto bg-felt-950/70 p-4 pt-[max(1rem,var(--safe-top))] pb-[max(1rem,var(--safe-bottom))] backdrop-blur-[3px]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
