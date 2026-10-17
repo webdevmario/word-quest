@@ -2,6 +2,7 @@ import { defaultStats } from '@/game/progression';
 import type {
   AppData,
   CustomWordData,
+  DailyRound,
   DifficultyKey,
   GameMode,
   Profile,
@@ -39,6 +40,30 @@ type Loose = Record<string, unknown>;
 const isObject = (v: unknown): v is Loose =>
   typeof v === 'object' && v !== null && !Array.isArray(v);
 
+function normalizeDaily(raw: unknown): DailyRound | null {
+  if (
+    !isObject(raw) ||
+    typeof raw.day !== 'string' ||
+    typeof raw.answer !== 'string' ||
+    !LEVELS.includes(raw.difficulty as DifficultyKey)
+  ) {
+    return null;
+  }
+  const result = isObject(raw.result)
+    ? { won: raw.result.won === true, tries: Number(raw.result.tries) || 0 }
+    : null;
+  return {
+    day: raw.day,
+    difficulty: raw.difficulty as DifficultyKey,
+    answer: raw.answer,
+    guesses: Array.isArray(raw.guesses)
+      ? raw.guesses.filter((g): g is string => typeof g === 'string')
+      : [],
+    usedClue: raw.usedClue === true,
+    result,
+  };
+}
+
 /** Fills in anything missing so older or partial saves still load. */
 export function normalizeProfile(raw: Loose): Profile {
   const prefs = isObject(raw.prefs) ? raw.prefs : {};
@@ -65,6 +90,7 @@ export function normalizeProfile(raw: Loose): Profile {
     wordBook: isObject(raw.wordBook)
       ? (raw.wordBook as Profile['wordBook'])
       : {},
+    daily: normalizeDaily(raw.daily),
   };
 }
 

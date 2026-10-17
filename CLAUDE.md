@@ -18,7 +18,7 @@ npm run test:e2e   # Playwright smoke tests (starts the dev server)
 - `src/fx/fxBus.ts` drives celebrations. Game code calls `celebrate()`, `queueBadges()`, `titleReveal()` and `mascotSay()`; `<FxLayer />` draws them. Sounds are synthesized in `fx/sound.ts`, so there are no audio files.
 - Word Worm board: column-major `columns[c][r]`, row 0 at the top, odd columns shifted half a tile down. `neighbors()` encodes that. Tiles keep an `id` so React/Motion can animate gravity.
 - Navigation is a small context (`app/nav.tsx`), not a router. Game screens are lazy-loaded in `app/App.tsx`.
-- Word Worm fire difficulty lives in `game/wordworm/rules.ts`; Word Guess rules, scoring and the daily word in `game/wordguess/guess.ts`.
+- Word Worm fire difficulty lives in `game/wordworm/rules.ts`; Word Guess rules, scoring and the daily word in `game/wordguess/guess.ts`. The word of the day is once per player per day: `game/wordguess/daily.ts` holds the rules, `profile.daily` saves progress so it resumes, and `recordGuessGame` ignores a second daily result.
 - PWA: `vite-plugin-pwa` in `vite.config.ts` precaches the build, fonts and `public/dict/*.txt`, so all modes play offline (service worker only in `npm run build`/`preview`). Updates wait until the home screen (`setSafeToReload` in `services/pwa.ts`). `app/useInstall.ts` decides whether to show "Add to home screen". Regenerate icons with `npm run icons:build`.
 - Word Search deliberately hides each word's point value; points only show when a word is found.
 

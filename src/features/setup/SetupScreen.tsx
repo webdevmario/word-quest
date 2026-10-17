@@ -11,6 +11,7 @@ import { allThemes } from '@/game/catalog';
 import { DIFFICULTIES, DIFFICULTY_ORDER } from '@/game/difficulty';
 import { MIX_THEME } from '@/game/themes';
 import type { GameMode } from '@/game/types';
+import { dailyBlurb, dailyState } from '@/game/wordguess/daily';
 import { GUESS_RULES, todayKey } from '@/game/wordguess/guess';
 import { setPrefs } from '@/store/actions';
 import { useAppData } from '@/store/appStore';
@@ -120,7 +121,18 @@ export function SetupScreen() {
     setPrefs(profile.id, prefs);
   const themes = allThemes(customLists);
   const level = DIFFICULTIES[difficulty];
-  const dailyDone = profile.stats.dailyPlayed === todayKey();
+  const today = todayKey();
+  const daily = dailyState(profile.daily, profile.stats.dailyPlayed, today);
+  // Once today's word is done, Word Guess plays practice words.
+  const playDaily = profile.prefs.guessDaily && daily !== 'done';
+  const startLabel =
+    mode !== 'guess'
+      ? START_LABELS[mode]
+      : daily === 'done'
+        ? 'Play practice words'
+        : playDaily && daily === 'playing'
+          ? 'Keep playing'
+          : START_LABELS.guess;
 
   return (
     <main className="mx-auto max-w-4xl px-4 pt-4 pb-28">
@@ -248,28 +260,36 @@ export function SetupScreen() {
                 [
                   true,
                   '📅 Word of the day',
-                  dailyDone
-                    ? 'Done for today. Come back tomorrow!'
-                    : 'A new secret word every day.',
+                  dailyBlurb(profile.daily, profile.stats.dailyPlayed, today),
                 ],
                 [false, '🎲 Practice words', 'Play as many as you like.'],
               ] as [boolean, string, string][]
-            ).map(([daily, title, help]) => {
-              const active = profile.prefs.guessDaily === daily;
+            ).map(([isDaily, title, help]) => {
+              const active = playDaily === isDaily;
+              const locked = isDaily && daily === 'done';
               return (
                 <button
                   key={title}
                   type="button"
                   aria-pressed={active}
-                  onClick={() => update({ guessDaily: daily })}
+                  disabled={locked}
+                  onClick={() => update({ guessDaily: isDaily })}
                   className={clsx(
                     'rounded-2xl px-4 py-3 text-left transition',
                     active
                       ? 'paper ring-2 ring-gilt-400'
-                      : 'bg-black/20 text-parchment-100 hover:bg-black/30'
+                      : 'bg-black/20 text-parchment-100',
+                    !active && !locked && 'hover:bg-black/30'
                   )}
                 >
-                  <span className="block font-bold">{title}</span>
+                  <span className="flex items-center gap-2 font-bold">
+                    {title}
+                    {locked && (
+                      <span className="grid size-5 place-items-center rounded-full bg-emerald text-white">
+                        <Check className="size-3.5" aria-label="Done today" />
+                      </span>
+                    )}
+                  </span>
                   <span
                     className={clsx(
                       'text-sm',
@@ -334,7 +354,7 @@ export function SetupScreen() {
             className="w-full"
             onClick={() => go(mode)}
           >
-            {START_LABELS[mode]}
+            {startLabel}
           </Button>
         </div>
       </div>

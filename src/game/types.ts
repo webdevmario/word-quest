@@ -47,6 +47,19 @@ export interface Stats {
   cardsOpened: number;
 }
 
+/** A player's word of the day, saved as they go so it resumes instead of restarting. */
+export interface DailyRound {
+  /** Date key (YYYY-MM-DD). */
+  day: string;
+  /** Locked in at the first guess, so changing difficulty can't swap the word. */
+  difficulty: DifficultyKey;
+  answer: string;
+  guesses: string[];
+  usedClue: boolean;
+  /** Set once the round is over and recorded. */
+  result: { won: boolean; tries: number } | null;
+}
+
 export interface WordBookEntry {
   count: number;
   firstFound: number;
@@ -71,6 +84,8 @@ export interface Profile {
   };
   /** Every word this player has found, keyed by UPPERCASE word. */
   wordBook: Record<string, WordBookEntry>;
+  /** The latest word of the day this player started. */
+  daily: DailyRound | null;
 }
 
 export interface CustomDefinition {
