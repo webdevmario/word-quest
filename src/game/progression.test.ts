@@ -30,6 +30,7 @@ const makeProfile = (): Profile => ({
     guessDaily: true,
   },
   wordBook: {},
+  daily: null,
 });
 
 describe('titles', () => {

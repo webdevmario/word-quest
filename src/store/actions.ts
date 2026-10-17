@@ -5,6 +5,7 @@ import { SCORING } from '@/game/scoring';
 import type {
   AppData,
   CustomDefinition,
+  DailyRound,
   DifficultyKey,
   Profile,
   Settings,
@@ -250,12 +251,29 @@ export interface GuessGameEvent {
   daily: string | null;
 }
 
+/** Saves word-of-the-day progress so it resumes after leaving or reloading. */
+export function saveDaily(id: string, round: DailyRound) {
+  updateData((data) => {
+    const profile = data.profiles.find((p) => p.id === id);
+    if (profile) {
+      profile.daily = { ...round, guesses: [...round.guesses] };
+    }
+  });
+}
+
 export function recordGuessGame(id: string, e: GuessGameEvent): Rewards {
   return withProfile(id, (p) => {
     const s = p.stats;
+    // The word of the day counts once a day, however it gets replayed.
+    if (e.daily && s.dailyPlayed === e.daily) {
+      return;
+    }
     s.guessPlayed++;
     if (e.daily) {
       s.dailyPlayed = e.daily;
+      if (p.daily?.day === e.daily) {
+        p.daily.result = { won: e.won, tries: e.tries };
+      }
     }
     if (!e.won) {
       s.guessStreak = 0;

@@ -1,6 +1,6 @@
 import { BookOpen, Volume2 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useNav } from '@/app/nav';
 import { useCurrentProfile } from '@/app/useCurrentProfile';
@@ -19,9 +19,10 @@ import { buzz } from '@/fx/haptics';
 import { sound } from '@/fx/sound';
 import type { Badge } from '@/game/progression';
 import type { Tier } from '@/game/scoring';
+import type { DifficultyKey } from '@/game/types';
+import { dailyFor, dailyState, roundOutcome } from '@/game/wordguess/daily';
 import {
   answerPool,
-  dailyAnswer,
   GUESS_RULES,
   guessPoints,
   keyboardStates,
@@ -31,7 +32,7 @@ import {
   todayKey,
 } from '@/game/wordguess/guess';
 import type { LetterState } from '@/game/wordguess/guess';
-import { recordGuessGame } from '@/store/actions';
+import { recordGuessGame, saveDaily } from '@/store/actions';
 import { useAppData } from '@/store/appStore';
 
 const FLIP_MS = 280;
@@ -48,13 +49,23 @@ const TIER_BY_TRIES: Tier[] = [
 interface Round {
   answer: string;
   daily: string | null;
+  difficulty: DifficultyKey;
 }
+
+type Guess = { word: string; states: LetterState[] };
 
 interface Result {
   won: boolean;
   tries: number;
   points: number;
   badges: Badge[];
+}
+
+function practiceRound(difficulty: DifficultyKey): Round {
+  const answer = randomAnswer(GUESS_RULES[difficulty].length, recent);
+  recent.push(answer);
+  recent.splice(0, recent.length - 20);
+  return { answer, daily: null, difficulty };
 }
 
 /** Window height minus the notch and home bar (the body's safe-area padding). */
@@ -73,33 +84,41 @@ export function WordGuessGame() {
   const { dict } = useDictionary();
 
   const difficulty = profile?.prefs.difficulty ?? 'medium';
-  const rules = GUESS_RULES[difficulty];
-  const today = todayKey();
 
-  const newRound = useCallback((): Round => {
-    const wantsDaily =
-      profile?.prefs.guessDaily && profile.stats.dailyPlayed !== today;
-    if (wantsDaily) {
-      return { answer: dailyAnswer(today, rules.length), daily: today };
+  // The word of the day picks up where it was left, and once it's done
+  // only practice words are left for today.
+  const [start] = useState(() => {
+    const today = todayKey();
+    const daily =
+      profile?.prefs.guessDaily &&
+      dailyState(profile.daily, profile.stats.dailyPlayed, today) !== 'done'
+        ? dailyFor(profile.daily, today, difficulty)
+        : null;
+    if (!daily) {
+      return { round: practiceRound(difficulty), guesses: [], clue: false };
     }
-    const answer = randomAnswer(rules.length, recent);
-    recent.push(answer);
-    recent.splice(0, recent.length - 20);
-    return { answer, daily: null };
-    // Only the first render picks a daily word.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rules.length]);
-
-  const [round, setRound] = useState<Round>(newRound);
-  const [guesses, setGuesses] = useState<
-    { word: string; states: LetterState[] }[]
-  >([]);
+    return {
+      round: {
+        answer: daily.answer,
+        daily: daily.day,
+        difficulty: daily.difficulty,
+      },
+      guesses: daily.guesses.map((word) => ({
+        word,
+        states: scoreGuess(word, daily.answer),
+      })),
+      clue: daily.usedClue,
+    };
+  });
+  const [round, setRound] = useState<Round>(start.round);
+  const rules = GUESS_RULES[round.difficulty];
+  const [guesses, setGuesses] = useState<Guess[]>(start.guesses);
   const [current, setCurrent] = useState('');
   const [revealRow, setRevealRow] = useState<number | null>(null);
   const [shakeRow, setShakeRow] = useState<number | null>(null);
   const [bounceRow, setBounceRow] = useState<number | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  const [usedClue, setUsedClue] = useState(false);
+  const [usedClue, setUsedClue] = useState(start.clue);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
   const [score, setScore] = useState(0);
@@ -111,6 +130,12 @@ export function WordGuessGame() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
   const messageTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => {
+    if (start.guesses.length > 0) {
+      mascotSay('think', 'Welcome back! Keep going.', 2500);
+    }
+  }, [start]);
 
   const done =
     result !== null ||
@@ -142,11 +167,34 @@ export function WordGuessGame() {
     buzz('miss');
   };
 
-  const finish = (won: boolean, tries: number) => {
-    if (!profile) {
-      return;
+  /** Saves word-of-the-day progress, so leaving can't give a fresh try. */
+  const saveProgress = (words: string[], clue: boolean) => {
+    if (profile && round.daily) {
+      saveDaily(profile.id, {
+        day: round.daily,
+        difficulty: round.difficulty,
+        answer: round.answer,
+        guesses: words,
+        usedClue: clue,
+        result: null,
+      });
     }
-    const points = won ? guessPoints(difficulty, tries, usedClue) : 0;
+  };
+
+  const showClue = () => {
+    setUsedClue(true);
+    saveProgress(
+      guesses.map((g) => g.word),
+      true
+    );
+  };
+
+  /** Recorded as soon as the last guess is in, so a reload can't undo it. */
+  const record = (won: boolean, tries: number) => {
+    if (!profile) {
+      return null;
+    }
+    const points = won ? guessPoints(round.difficulty, tries, usedClue) : 0;
     const rewards = recordGuessGame(profile.id, {
       word: round.answer,
       won,
@@ -154,6 +202,15 @@ export function WordGuessGame() {
       points,
       daily: round.daily,
     });
+    return { won, tries, points, rewards };
+  };
+
+  const finish = ({
+    won,
+    tries,
+    points,
+    rewards,
+  }: NonNullable<ReturnType<typeof record>>) => {
     queueBadges(rewards.badges, won ? 1400 : 600);
     if (rewards.newTitle) {
       titleReveal(rewards.newTitle, 1800);
@@ -211,6 +268,10 @@ export function WordGuessGame() {
 
     const states = scoreGuess(word, round.answer);
     const next = [...guesses, { word, states }];
+    const words = next.map((g) => g.word);
+    saveProgress(words, usedClue);
+    const outcome = roundOutcome(words, round.answer, rules.maxGuesses);
+    const recorded = outcome && record(outcome.won, outcome.tries);
     setGuesses(next);
     setCurrent('');
     setRevealRow(next.length - 1);
@@ -227,11 +288,8 @@ export function WordGuessGame() {
     const revealTime = rules.length * FLIP_MS + 350;
     setTimeout(() => {
       setBusy(false);
-      const won = word === round.answer;
-      if (won) {
-        finish(true, next.length);
-      } else if (next.length >= rules.maxGuesses) {
-        finish(false, next.length);
+      if (recorded) {
+        finish(recorded);
       } else if (next.length === 3 && !usedClue) {
         mascotSay('think', 'Stuck? Tap “Show clue” for a hint.', 3000);
       }
@@ -276,7 +334,7 @@ export function WordGuessGame() {
   });
 
   const playAgain = () => {
-    setRound(newRound());
+    setRound(practiceRound(difficulty));
     setGuesses([]);
     setCurrent('');
     setRevealRow(null);
@@ -346,7 +404,7 @@ export function WordGuessGame() {
                 variant="wood"
                 size="sm"
                 className="mx-auto flex"
-                onClick={() => setUsedClue(true)}
+                onClick={showClue}
                 disabled={done || !meaning}
               >
                 <BookOpen className="size-4" aria-hidden /> Show clue (¾ points)
@@ -440,7 +498,15 @@ export function WordGuessGame() {
               })}
             </div>
 
-            <div className="mt-6 flex gap-3">
+            {round.daily && (
+              <p className="mt-4 font-bold text-ink-soft">
+                Come back tomorrow for a new word!
+              </p>
+            )}
+
+            <div
+              className={round.daily ? 'mt-3 flex gap-3' : 'mt-6 flex gap-3'}
+            >
               <Button className="flex-1 !px-3" onClick={() => go('setup')}>
                 Change game
               </Button>
@@ -454,7 +520,7 @@ export function WordGuessGame() {
                   }
                 }}
               >
-                Play another
+                {round.daily ? 'Practice words' : 'Play another'}
               </Button>
             </div>
           </>
