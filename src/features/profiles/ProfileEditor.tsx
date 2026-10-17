@@ -118,7 +118,7 @@ export function ProfileEditor() {
 
         <fieldset className="mt-6">
           <legend className="font-bold">Pick a cover</legend>
-          <div className="mt-2 flex flex-wrap gap-3">
+          <div className="mt-2 grid grid-cols-5 justify-items-center gap-x-2 gap-y-3 sm:grid-cols-10">
             {COVERS.map((c) => (
               <button
                 key={c.id}

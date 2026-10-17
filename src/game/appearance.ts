@@ -14,6 +14,18 @@ export const COVERS = [
   { id: 'teal', name: 'Teal', color: '#1C7C83' },
   { id: 'plum', name: 'Plum', color: '#8A2F6B' },
   { id: 'slate', name: 'Slate', color: '#3E5566' },
+  { id: 'coral', name: 'Coral', color: '#C4502F' },
+  { id: 'pink', name: 'Pink', color: '#C2457F' },
+  { id: 'grass', name: 'Grass', color: '#4E8A2A' },
+  { id: 'forest', name: 'Forest', color: '#2E5B36' },
+  { id: 'olive', name: 'Olive', color: '#6E7420' },
+  { id: 'sky', name: 'Sky', color: '#2A7DB5' },
+  { id: 'navy', name: 'Navy', color: '#1F3A6B' },
+  { id: 'indigo', name: 'Indigo', color: '#4637A3' },
+  { id: 'lavender', name: 'Lavender', color: '#8064C4' },
+  { id: 'chocolate', name: 'Chocolate', color: '#6B4226' },
+  { id: 'midnight', name: 'Midnight', color: '#262B45' },
+  { id: 'berry', name: 'Berry', color: '#8C2346' },
 ] as const;
 
 /** Bright jewel tints for words found in Word Search. */
